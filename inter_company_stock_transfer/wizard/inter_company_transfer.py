@@ -14,6 +14,11 @@ class InterCompanyTransfer(models.TransientModel):
     dest_location_id = fields.Many2one('stock.location', string='Destination Location')
     line_ids = fields.One2many('inter.company.transfer.line', 'stock_transfer_id')
 
+    @api.onchange('line_ids', 'location_id')
+    def _onchange_line_ids(self):
+        for line in self.line_ids:
+            line.available_qty = self.env['stock.quant']._get_available_quantity(line.product_id, self.location_id)
+
     @api.onchange('company_id')
     def onchange_company_id(self):
         if self.company_id and self.dest_company_id and \
